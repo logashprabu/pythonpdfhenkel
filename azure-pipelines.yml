@@ -1,5 +1,4 @@
 # Azure Pipelines YAML
-# https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml/schema
 
 trigger:
   branches:
@@ -10,11 +9,11 @@ pool:
   vmImage: 'ubuntu-latest'  # Or select another image based on your requirements
 
 variables:
-  pythonVersion: '3.9'       # Python version for the virtual environment
-  scriptDirectory: '$(Build.SourcesDirectory)'  # Source directory containing your script
-  pdfDirectory: '$(Build.SourcesDirectory)'  # Adjust path where PDFs reside (within scriptDirectory)
-  signedPdfOutput: 'signed_output.pdf'      # Name of the signed output file
-  artifactName: 'SignedPDFs'  # Name of the artifact to publish
+  pythonVersion: '3.9'
+  scriptDirectory: '$(Build.SourcesDirectory)'
+  pdfDirectory: 'pdfs'  # Assuming PDFs are in a folder named 'pdfs'
+  signedPdfOutput: 'signed_output.pdf'
+  artifactName: 'SignedPDFs'
 
 steps:
   - task: UsePythonVersion@0
@@ -30,9 +29,7 @@ steps:
   - script: |
       virtualenv venv
       source venv/bin/activate
-      pip install OpenSSL
-      pip install PyPDF2
-      pip install PDFNetPython3
+      pip install OpenSSL PyPDF2 PDFNetPython3
     displayName: 'Setup Virtual Environment and Install Dependencies'
 
   - script: |
@@ -45,14 +42,14 @@ steps:
 
   - task: CopyFiles@2
     inputs:
-      SourceFolder: $(scriptDirectory)/$(pdfDirectory)  # Update source folder based on PDF location
-      Contents: '**/*.pdf'  # Keep this to copy all PDFs from the source directory
+      SourceFolder: $(scriptDirectory)/$(pdfDirectory)
+      Contents: '**/*.pdf'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Copy Signed PDFs to Artifact Staging Directory'
 
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: $(artifactName)-$(Date:yyyyMMdd)  # Customize artifact name with date
+      artifactName: $(artifactName)-$(Date:yyyyMMdd)
       publishLocation: 'Container'
     displayName: 'Publish Signed PDFs'
