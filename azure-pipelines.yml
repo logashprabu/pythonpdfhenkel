@@ -17,42 +17,42 @@ variables:
   artifactName: 'SignedPDFs'  # Name of the artifact to publish
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: $(pythonVersion)
-  displayName: 'Set Python Version'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: $(pythonVersion)
+    displayName: 'Set Python Version'
 
-- script: |
-  python -m pip install --upgrade pip
-  pip install virtualenv
-  displayName: 'Upgrade pip and install virtualenv'
+  - script: |
+      python -m pip install --upgrade pip
+      pip install virtualenv
+    displayName: 'Upgrade pip and install virtualenv'
 
-- script: |
-  virtualenv venv
-  source venv/bin/activate
-  pip install OpenSSL
-  pip install PyPDF2
-  pip install PDFNetPython3
-  displayName: 'Setup Virtual Environment and Install Dependencies'
+  - script: |
+      virtualenv venv
+      source venv/bin/activate
+      pip install OpenSSL
+      pip install PyPDF2
+      pip install PDFNetPython3
+    displayName: 'Setup Virtual Environment and Install Dependencies'
 
-- script: |
-  source venv/bin/activate
-  python $(scriptDirectory)/sign_pdf.py \
-  --input_path $(scriptDirectory)/$(pdfDirectory) \
-  --signatureID 'sig1' --x_coordinate 50 --y_coordinate 200 \
-  --output_file $(scriptDirectory)/$(signedPdfOutput)
-  displayName: 'Run PDF Signing Script'
+  - script: |
+      source venv/bin/activate
+      python $(scriptDirectory)/sign_pdf.py \
+        --input_path $(scriptDirectory)/$(pdfDirectory) \
+        --signatureID 'sig1' --x_coordinate 50 --y_coordinate 200 \
+        --output_file $(scriptDirectory)/$(signedPdfOutput)
+    displayName: 'Run PDF Signing Script'
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: $(scriptDirectory)/$(pdfDirectory)  # Update source folder based on PDF location
-    Contents: '**/*.pdf'  # Keep this to copy all PDFs from the source directory
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Copy Signed PDFs to Artifact Staging Directory'
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: $(scriptDirectory)/$(pdfDirectory)  # Update source folder based on PDF location
+      Contents: '**/*.pdf'  # Keep this to copy all PDFs from the source directory
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    displayName: 'Copy Signed PDFs to Artifact Staging Directory'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: $(artifactName)-$(Date:yyyyMMdd)  # Customize artifact name with date
-    publishLocation: 'Container'
-  displayName: 'Publish Signed PDFs'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: $(artifactName)-$(Date:yyyyMMdd)  # Customize artifact name with date
+      publishLocation: 'Container'
+    displayName: 'Publish Signed PDFs'
