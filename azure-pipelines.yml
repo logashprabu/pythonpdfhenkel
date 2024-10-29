@@ -29,7 +29,7 @@ steps:
   - script: |
       virtualenv venv
       source venv/bin/activate
-      pip install OpenSSL PyPDF2 PDFNetPython3
+      pip install pyOpenSSL PyPDF2 PDFNetPython3
     displayName: 'Setup Virtual Environment and Install Dependencies'
 
   - script: |
