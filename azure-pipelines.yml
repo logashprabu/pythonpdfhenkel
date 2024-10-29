@@ -43,11 +43,10 @@ steps:
 # Step to run PDF signing script
 - script: |
     source venv/bin/activate
-    python $(scriptDirectory)/sign_pdf.py 
-    #\
-     # --input_path $(scriptDirectory)/$(pdfDirectory) \
-      #--signatureID $(signatureID) --x_coordinate $(xCoordinate) --y_coordinate $(yCoordinate) \
-      #--output_file $(scriptDirectory)/signed_output/$(signedPdfOutput)  # Adjust output file path
+    python $(scriptDirectory)/sign_pdf.py \
+      --input_path $(scriptDirectory)/$(pdfDirectory) \
+      --signatureID $(signatureID) --x_coordinate $(xCoordinate) --y_coordinate $(yCoordinate) \
+      --output_file $(scriptDirectory)/signed_output/$(signedPdfOutput)  # Adjust output file path
   displayName: 'Run PDF Signing Script'
 
 # Step to copy signed PDFs to the artifact staging directory
