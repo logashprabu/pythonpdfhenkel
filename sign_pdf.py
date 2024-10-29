@@ -5,7 +5,7 @@ from PDFNetPython3.PDFNetPython import *
 from typing import Tuple
 
 # Declare the variable for the PKCS#12 file path
-pk_filename = "path/to/your/certificate.pfx"  # Replace with your actual path
+pk_filename = "certificate.pfx"  # Replace with your actual path
 
 def sign_file(input_file: str, signatureID: str, x_coordinate: int, 
             y_coordinate: int, pages: Tuple = None, output_file: str = None
