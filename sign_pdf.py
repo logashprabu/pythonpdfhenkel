@@ -86,12 +86,17 @@ def is_valid_path(path):
     """Validates the path inputted and checks whether it is a file path or a folder path"""
     if not path:
         raise ValueError(f"Invalid Path")
-    if os.path.isfile(path):
-        return path
-    elif os.path.isdir(path):
-        return path
+    
+    # Normalize the path to avoid issues with double slashes
+    normalized_path = os.path.normpath(path)
+    
+    if os.path.isfile(normalized_path):
+        return normalized_path
+    elif os.path.isdir(normalized_path):
+        return normalized_path
     else:
         raise ValueError(f"Invalid Path {path}")
+
 
 
 def parse_args():
