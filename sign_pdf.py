@@ -1,4 +1,3 @@
-import OpenSSL
 import os
 import time
 import argparse
