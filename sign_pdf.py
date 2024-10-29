@@ -1,4 +1,3 @@
-import OpenSSL
 import os
 import argparse
 from PDFNetPython3.PDFNetPython import *
