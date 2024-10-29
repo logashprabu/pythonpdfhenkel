@@ -1,55 +1,66 @@
-# Azure Pipelines YAML
 
 trigger:
   branches:
     include:
-      - main  # Adjust based on your repository branch
+      - main
 
 pool:
-  vmImage: 'ubuntu-latest'  # Or select another image based on your requirements
+  vmImage: 'ubuntu-latest'
 
 variables:
   pythonVersion: '3.9'
   scriptDirectory: '$(Build.SourcesDirectory)'
-  pdfDirectory: 'pdfs'  # Assuming PDFs are in a folder named 'pdfs'
+  pdfDirectory: 'pdfs'  # Relative path for the directory containing PDFs
   signedPdfOutput: 'signed_output.pdf'
   artifactName: 'SignedPDFs'
+  signatureID: 'sig1'  # Default signature ID
+  xCoordinate: 50
+  yCoordinate: 200
 
 steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: $(pythonVersion)
-    displayName: 'Set Python Version'
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: $(pythonVersion)
+  displayName: 'Set Python Version'
 
-  - script: |
-      python -m pip install --upgrade pip
-      pip install virtualenv
-    displayName: 'Upgrade pip and install virtualenv'
+- script: |
+    python -m pip install --upgrade pip
+    pip install virtualenv
+  displayName: 'Upgrade pip and install virtualenv'
 
-  - script: |
-      virtualenv venv
-      source venv/bin/activate
-      pip install pyOpenSSL PyPDF2 PDFNetPython3
-    displayName: 'Setup Virtual Environment and Install Dependencies'
+- script: |
+    virtualenv venv
+    source venv/bin/activate
+    pip install PDFNetPython3  # Install only necessary libraries
+  displayName: 'Setup Virtual Environment and Install Dependencies'
 
-  - script: |
-      source venv/bin/activate
-      python $(scriptDirectory)/sign_pdf.py \
-        --input_path $(scriptDirectory)/$(pdfDirectory) \
-        --signatureID 'sig1' --x_coordinate 50 --y_coordinate 200 \
-        --output_file $(scriptDirectory)/$(signedPdfOutput)
-    displayName: 'Run PDF Signing Script'
+# Step to create directories
+- script: |
+    mkdir -p $(scriptDirectory)/$(pdfDirectory)  # Create PDF directory if it doesn't exist
+    mkdir -p $(scriptDirectory)/signed_output  # Create output directory for signed PDFs
+  displayName: 'Create Required Directories'
 
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: $(scriptDirectory)/$(pdfDirectory)
-      Contents: '**/*.pdf'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Copy Signed PDFs to Artifact Staging Directory'
+# Step to run PDF signing script
+- script: |
+    source venv/bin/activate
+    python $(scriptDirectory)/sign_pdf.py \
+      --input_path $(scriptDirectory)/$(pdfDirectory) \
+      --signatureID $(signatureID) --x_coordinate $(xCoordinate) --y_coordinate $(yCoordinate) \
+      --output_file $(scriptDirectory)/signed_output/$(signedPdfOutput)  # Adjust output file path
+  displayName: 'Run PDF Signing Script'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: $(artifactName)-$(Date:yyyyMMdd)
-      publishLocation: 'Container'
-    displayName: 'Publish Signed PDFs'
+# Step to copy signed PDFs to the artifact staging directory
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(scriptDirectory)/signed_output'  # Updated source folder based on signed PDFs location
+    Contents: '**/*.pdf'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copy Signed PDFs to Artifact Staging Directory'
+
+# Step to publish signed PDFs
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: $(artifactName)-$(Date:yyyyMMdd)
+    publishLocation: 'Container'
+  displayName: 'Publish Signed PDFs'
